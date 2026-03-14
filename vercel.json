@@ -1,7 +1,7 @@
 {
   "functions": {
-    "src/app/api/*/route.ts": {
-      "runtime": "nodejs20.x"
+    "src/app/api/**/route.ts": {
+      "runtime": "nodejs18.x"
     }
   },
   "crons": [

@@ -7,15 +7,15 @@
   "crons": [
     {
       "path": "/api/cron/health",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 9 * * *"
     },
     {
       "path": "/api/cron/security",
-      "schedule": "0 */6 * * *"
+      "schedule": "0 12 * * *"
     },
     {
       "path": "/api/cron/notifications",
-      "schedule": "*/2 * * * *"
+      "schedule": "0 18 * * *"
     }
   ]
 }

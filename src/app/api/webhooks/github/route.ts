@@ -137,6 +137,39 @@ function generateDescription(eventType: string, eventData: any): string {
   }
 }
 
+// Trigger AI analysis for intelligent notifications
+async function triggerIntelligentAnalysis(eventType: string, severity: string, repoName: string, eventData: any) {
+  try {
+    // Future: This will call the Hermes AI analysis endpoint
+    // For now, create an alert if it's critical
+    if (severity === 'critical') {
+      const supabase = createServiceRoleClient()
+      
+      await supabase
+        .from('alerts')
+        .insert({
+          source: 'github',
+          severity: severity as any,
+          title: `Critical ${eventType} in ${repoName}`,
+          description: `Requires immediate attention: ${eventType} event detected`,
+          affected_repo: repoName,
+          external_id: `${eventType}_${repoName}_${Date.now()}`,
+          status: 'open',
+          metadata: {
+            event_type: eventType,
+            repository: repoName,
+            analysis_triggered: true,
+            auto_created: true
+          }
+        })
+        
+      console.log(`🚨 Critical alert created for ${eventType} in ${repoName}`)
+    }
+  } catch (error) {
+    console.error('Intelligence analysis error:', error)
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text()
@@ -178,8 +211,8 @@ export async function POST(request: NextRequest) {
     const title = generateTitle(eventType, eventData)
     const description = generateDescription(eventType, eventData)
 
-    // Insert event to database
-    const { error: eventError } = await supabase
+    // Insert the event
+    const { error: insertError } = await supabase
       .from('events')
       .insert({
         source: 'github',
@@ -191,12 +224,13 @@ export async function POST(request: NextRequest) {
         metadata: eventData
       })
 
-    if (eventError) {
-      console.error('Error inserting event:', eventError)
-      return NextResponse.json(
-        { error: 'Database error' },
-        { status: 500 }
-      )
+    if (insertError) {
+      console.error('Database insert error:', insertError)
+    }
+
+    // Enhanced: Trigger AI analysis for intelligent notifications
+    if (severity === 'critical' || severity === 'error') {
+      await triggerIntelligentAnalysis(eventType, severity, repoName, eventData)
     }
 
     // Handle special alert cases

@@ -233,6 +233,8 @@ export async function POST(request: NextRequest) {
       await triggerIntelligentAnalysis(eventType, severity, repoName, eventData)
     }
 
+    console.log(`✅ GitHub ${eventType} event processed for ${repoName}`)
+
     // Handle special alert cases
     if (eventType === 'repository_vulnerability_alert') {
       const alert = eventData.alert
@@ -264,10 +266,11 @@ export async function POST(request: NextRequest) {
     console.log(`✅ GitHub ${eventType} event processed for ${repoName}`)
     
     return NextResponse.json({ 
-      success: true, 
+      success: true,
       event_type: eventType,
       severity,
-      repository: repoName 
+      repository: repoName,
+      ai_analysis_triggered: severity === 'critical' || severity === 'error'
     })
 
   } catch (error) {

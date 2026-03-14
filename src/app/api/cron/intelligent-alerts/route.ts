@@ -88,10 +88,12 @@ async function performIntelligentAnalysis(events: any[], alerts: any[]) {
   
   // Error pattern detection
   const errorEvents = events.filter(e => e.severity === 'error')
-  const errorsByRepo = {}
+  const errorsByRepo: Record<string, number> = {}
   
   errorEvents.forEach(e => {
-    errorsByRepo[e.project_name] = (errorsByRepo[e.project_name] || 0) + 1
+    if (e.project_name) {
+      errorsByRepo[e.project_name] = (errorsByRepo[e.project_name] || 0) + 1
+    }
   })
   
   // Deployment correlation analysis
@@ -119,7 +121,7 @@ async function performIntelligentAnalysis(events: any[], alerts: any[]) {
   
   // Long-standing alerts
   const staleAlerts = alerts.filter(a => 
-    new Date(Date.now() - new Date(a.created_at).getTime()) > 24 * 60 * 60 * 1000
+    Date.now() - new Date(a.created_at).getTime() > 24 * 60 * 60 * 1000
   )
   
   if (staleAlerts.length > 0) {

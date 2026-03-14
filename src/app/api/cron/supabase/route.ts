@@ -90,7 +90,7 @@ async function checkSupabaseHealth(): Promise<{
     
     const openAlertCount = openAlerts?.length || 0
     const staleAlerts = openAlerts?.filter(a => 
-      new Date(Date.now() - new Date(a.created_at).getTime()) > 24 * 60 * 60 * 1000
+      Date.now() - new Date(a.created_at).getTime() > 24 * 60 * 60 * 1000
     ).length || 0
     
     if (staleAlerts > 5) {

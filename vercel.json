@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/supabase",
-      "schedule": "0 */6 * * *"
+      "schedule": "0 8 * * *"
     },
     {
       "path": "/api/cron/security",
@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/intelligent-alerts",
-      "schedule": "3 */6 * * *"
+      "schedule": "0 18 * * *"
     }
   ]
 }

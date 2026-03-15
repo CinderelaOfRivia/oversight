@@ -44,26 +44,26 @@ export async function POST(request: NextRequest) {
 
 async function sendDirectChatNotification(data: any) {
   // Build intelligent notification message
-  let notificationText = `🛡️ **DevOps Alert (${data.priority.toUpperCase()})**\n\n`
+  let notificationText = `🛡️ <b>DevOps Alert (${data.priority.toUpperCase()})</b>\n\n`
   
   if (data.alert_type === 'security') {
-    notificationText += `🚨 **${data.title}**\n`
+    notificationText += `🚨 <b>${data.title}</b>\n`
   } else if (data.alert_type === 'error_spike') {
-    notificationText += `📊 **${data.title}**\n`  
+    notificationText += `📊 <b>${data.title}</b>\n`  
   } else if (data.alert_type === 'deployment_issue') {
-    notificationText += `⚠️ **${data.title}**\n`
+    notificationText += `⚠️ <b>${data.title}</b>\n`
   } else {
-    notificationText += `ℹ️ **${data.title}**\n`
+    notificationText += `ℹ️ <b>${data.title}</b>\n`
   }
   
   notificationText += `${data.message}\n\n`
   
   if (data.affected_projects?.length > 0) {
-    notificationText += `**Affected:** ${data.affected_projects.join(', ')}\n\n`
+    notificationText += `<b>Affected:</b> ${data.affected_projects.join(', ')}\n\n`
   }
   
   if (data.recommendations?.length > 0) {
-    notificationText += `**Recommendations:**\n`
+    notificationText += `<b>Recommendations:</b>\n`
     data.recommendations.forEach((rec: string, i: number) => {
       notificationText += `${i + 1}. ${rec}\n`
     })
@@ -71,27 +71,42 @@ async function sendDirectChatNotification(data: any) {
   }
   
   if (data.context) {
-    notificationText += `**Context:** ${data.context}\n\n`
+    notificationText += `<b>Context:</b> ${data.context}\n\n`
   }
   
-  notificationText += `**Dashboard:** https://oversight-bic6oinc4-suprafa0412-8612s-projects.vercel.app`
+  notificationText += `<b>Dashboard:</b> https://oversight-sable.vercel.app`
   
-  // Use the existing Hermes notification system to send to this chat
   const telegramPayload = {
     chat_id: "2123992644", // This chat with Rafa
     text: notificationText,
-    parse_mode: "Markdown"
+    parse_mode: "HTML" // Changed to HTML
   }
-  
-  // For now, log the notification (will integrate with actual Telegram API)
-  console.log('📱 DIRECT CHAT NOTIFICATION:', telegramPayload)
-  
-  // Future: Integrate with Hermes messaging system
-  // await fetch(`${process.env.HERMES_API_URL}/send-message`, {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(telegramPayload)
-  // })
+
+  const botToken = process.env.TELEGRAM_BOT_TOKEN
+  if (!botToken) {
+    console.error('TELEGRAM_BOT_TOKEN is not set for chat-notify. Notification not sent.')
+    return telegramPayload // Still return payload, but log the error.
+  }
+
+  const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`
+
+  try {
+    const response = await fetch(telegramApiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(telegramPayload)
+    })
+
+    if (!response.ok) {
+      console.error('Telegram API error:', response.status, await response.text())
+    } else {
+      console.log('📱 DIRECT CHAT NOTIFICATION SENT:', telegramPayload.text)
+    }
+  } catch (error) {
+    console.error('Telegram notification failed:', error)
+  }
   
   return telegramPayload
 }
